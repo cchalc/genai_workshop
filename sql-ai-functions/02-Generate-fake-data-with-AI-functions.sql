@@ -35,15 +35,15 @@
 -- as previously, make sure you run this notebook using a SQL Warehouse (not a cluster)
 SELECT assert_true(current_version().dbsql_version is not null, 'YOU MUST USE A SQL WAREHOUSE');
 
-USE CATALOG users;
-CREATE SCHEMA IF NOT EXISTS christopher_chalcraft;
-USE SCHEMA christopher_chalcraft;
+USE CATALOG nam_workshop;
+CREATE SCHEMA IF NOT EXISTS ai_sql_testing;
+USE SCHEMA ai_sql_testing;
 
 -- COMMAND ----------
 
 SELECT
   AI_QUERY(
-    "databricks-dbrx-instruct",
+    "databricks-mixtral-8x7b-instruct",
     "Generate a short product review for a red dress. The customer is very happy with the article."
   ) as product_review
 
@@ -120,6 +120,24 @@ SELECT ASK_LLM_MODEL(
 -- MAGIC Our results are looking good. All we now have to do is transform the results from text as a JSON and explode the results over N rows.
 -- MAGIC
 -- MAGIC Let's create a new function to do that:
+
+-- COMMAND ----------
+
+CREATE OR REPLACE FUNCTION nam_workshop.review_classification(num_reviews INT DEFAULT 5)
+  RETURNS array<struct<review_date:date, review_id:long, customer_id:long, review:string>>
+  RETURN 
+  SELECT FROM_JSON(
+      ASK_LLM_MODEL(
+        CONCAT('Generate a sample dataset of ', num_reviews, ' rows that contains the following columns: "date" (random dates in 2022), 
+        "review_id" (random long), "customer_id" (random long from 1 to 100) and "review". 
+        Reviews should mimic useful product reviews from popular grocery brands product left on an e-commerce marketplace website. The review must include the product name.
+
+        The reviews should vary in length (shortest: 5 sentence, longest: 10 sentences).
+        Provide a mix of positive, negative, and neutral reviews but mostly negative.
+
+        Give me JSON only. No text outside JSON. No explanations or notes
+        [{"review_date":<date>, "review_id":<long>, "customer_id":<long>, "review":<string>}]')), 
+        "array<struct<review_date:date, review_id:long, customer_id:long, review:string>>")
 
 -- COMMAND ----------
 
