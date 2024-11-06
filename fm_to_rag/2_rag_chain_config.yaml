@@ -1,0 +1,43 @@
+input_example:
+  messages:
+  - content: How do I use embeddings in Databricks?
+    role: user
+llm:
+  hyperparameters:
+    max_tokens: 500
+    temperature: 0.01
+  prompt_template: 'You are a trusted AI assistant that helps answer questions based
+    only on the provided information. If you do not know the answer to a question,
+    say you do not know. Here is the history of the current conversation you are having
+    with your user: {chat_history}. Here is some context which may or may not help
+    you answer the following question: {context}. Answer directly, do not repeat the
+    question and be concise. Start with ''Mangabot here''. Based on this context,
+    answer this question: {question}'
+  prompt_template_variables:
+  - context
+  - chat_history
+  - question
+output_example:
+  content: To start a Databricks cluster, hit the button
+  id: run-d304fcfb-09e6-4eb3-83df-b6692fdc1c0a-0
+  response_metadata:
+    completion_tokens: 108
+    prompt_tokens: 65
+    total_tokens: 173
+  type: ai
+resources:
+  llm_endpoint_name: databricks-dbrx-instruct
+  vector_search_endpoint_name: dbdemos_vs_endpoint
+retriever:
+  chunk_template: 'Passage: {chunk_text}
+
+    '
+  data_pipeline_tag: poc
+  parameters:
+    k: 3
+    query_type: ann
+  schema:
+    chunk_text: content
+    document_uri: url
+    primary_key: id
+  vector_search_index: shm.dbdemos_llm_rag.databricks_documentation_vs_index
