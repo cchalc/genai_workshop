@@ -9,9 +9,11 @@ from pathlib import Path
 
 # COMMAND ----------
 
-url = 'https://www.cn.ca/en/supplier-portal/supplier-portal/policies-and-guidelines'
-pdf_folder = '/Volumes/shm/default/raw_pdfs/'
-json_folder = '/Volumes/shm/default/raw_json/'
+# url = 'https://www.cn.ca/en/supplier-portal/supplier-portal/policies-and-guidelines'
+url = 'https://tc.canada.ca/en/rail-transportation/rules/2022-2023/canadian-rail-operating-rules'
+url2 = "https://tc.canada.ca/sites/default/files/2022-05/canadian-rail-operating-rules-may-9-2022.pdf"
+pdf_folder = '/nam_workshop/default/raw_pdfs/' 
+json_folder = '/nam_workshop/default/raw_json/'
 
 # COMMAND ----------
 
@@ -49,5 +51,5 @@ display(combined_df)
 (combined_df.write
     .format("delta")
     .mode("overwrite")
-    .saveAsTable("shm.default.chunked_docs")
+    .saveAsTable("nam_workshop.default.chunked_docs")
 )

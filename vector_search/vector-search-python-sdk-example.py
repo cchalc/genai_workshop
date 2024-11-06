@@ -39,7 +39,7 @@ help(VectorSearchClient)
 # Specify the catalog and schema to use. You must have USE_CATALOG privilege on the catalog and USE_SCHEMA and CREATE_TABLE privileges on the schema.
 # Change the catalog and schema here if necessary.
 
-catalog_name = "main"
+catalog_name = "nam_workshop"
 schema_name = "default"
 
 

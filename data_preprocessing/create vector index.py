@@ -4,25 +4,34 @@
 
 # COMMAND ----------
 
+# MAGIC %pip install langchain_community
+
+# COMMAND ----------
+
 # MAGIC %sql
-# MAGIC -- Enable CDC for Vector Search Delta Sync
-# MAGIC ALTER TABLE shm.default.chunked_docs 
+# MAGIC -- Enable CDC for Vector Search Delta Sync | chunked_docs
+# MAGIC ALTER TABLE nam_workshop.default.spotify_dataset 
 # MAGIC SET TBLPROPERTIES (delta.enableChangeDataFeed = true)
+
+# COMMAND ----------
+
+catalog = 'nam_workshop'
+table_name = 'spotify_dataset'
 
 # COMMAND ----------
 
 from pyspark.sql import functions as F
 
 (
-  spark.table("shm.default.chunked_docs")
+  spark.table(f"{catalog}.default.{table_name}")
   .withColumn("chunk_id", F.monotonically_increasing_id())
   .write.format("delta")
   .mode("overwrite")
   .option("mergeSchema", "true")  # Enable schema merging
-  .saveAsTable("shm.default.chunked_docs")
+  .saveAsTable(f"{catalog}.default.{table_name}")
 )
 
-df = spark.table('shm.default.chunked_docs')
+df = spark.table(f'{catalog}.default.{table_name}')
 display(df.limit(5))
 
 # COMMAND ----------
@@ -34,8 +43,9 @@ vsc = VectorSearchClient(disable_notice=True)
 
 # COMMAND ----------
 
-endpoint = 'one-env-shared-endpoint-4'
-index_name = 'shm.default.vectorsearch_index'
+endpoint = 'vs_endpoint_1'#'one-env-shared-endpoint-nam'
+index_name = f'{catalog}.default.vectorsearch_index_spotify'
+column_content = 'Review' #text
 force_delete = False
 
 def find_index(vsc, endpoint_name, index_name):
@@ -61,11 +71,15 @@ if create_index:
         endpoint_name=endpoint,
         index_name=index_name,
         primary_key="chunk_id",
-        source_table_name='shm.default.chunked_docs',
+        source_table_name=f'{catalog}.default.{table_name}',
         pipeline_type='TRIGGERED',
-        embedding_source_column="text",
+        embedding_source_column=column_content,
         embedding_model_endpoint_name='databricks-bge-large-en'
     )
+
+# COMMAND ----------
+
+index_name = f"{catalog}.default.vectorsearch_spotify" #vectorsearch_spotify
 
 # COMMAND ----------
 
@@ -79,7 +93,7 @@ vs_index = vsc.get_index(
 
 # Import the necessary class
 from langchain.embeddings import DatabricksEmbeddings
-from langchain_community.vectorstores import DatabricksVectorSearch
+from langchain.vectorstores import DatabricksVectorSearch
 
 # Create the retriever
 # 'k' is the number of results to return
@@ -89,12 +103,12 @@ embedding_model = DatabricksEmbeddings(
 
 vs_retriever = DatabricksVectorSearch(
     vs_index, 
-    text_column="text"
-).as_retriever(search_kwargs={"k": 1})
+    text_column=column_content
+).as_retriever(search_kwargs={"k": 10})
 
 # COMMAND ----------
 
-vs_retriever.invoke("NON-DISCRIMINATORY WORKING ENVIRONMENT")
+vs_retriever.invoke("song")
 
 # COMMAND ----------
 
